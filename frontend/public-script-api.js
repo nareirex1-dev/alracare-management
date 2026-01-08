@@ -28,35 +28,499 @@ async function loadServicesFromAPI() {
 function loadFallbackServices() {
     // Keep existing hardcoded serviceDetails as fallback
     serviceDetails = {
-        perawatan1: {
+    perawatan1: {
             title: "Perawatan Luka Modern",
             description: "Pilih jenis perawatan luka yang Anda butuhkan",
             type: "checkbox",
             options: [
-                {
-                    id: "Perawatan Luka di Klinik",
-                    name: "1. Perawatan Luka di Klinik",
-                    price: "Rp 150.000",
-                    image: "/images/WoundCare.jpg",
-                },
-                {
-                    id: "Perawatan Luka Ke Rumah",
-                    name: "2. Perawatan Luka Ke Rumah di Area Pontianak",
-                    price: "Rp 200.000",
-                    image: "/images/WoundCare.jpg",
-                },
-                {
-                    id: "L_SENDALDIABETES",
-                    name: "3. Sendal Diabetes",
-                    price: "Rp 500.000",
-                    image: "/images/DiabetesSandals.jpg",
-                }
-            ]
-        }
-        // ... rest of fallback data
-    };
-}
-
+            {
+                id: "Perawatan Luka di Klinik",
+                name: "1. Perawatan Luka di Klinik",
+                price: "Rp 150.000",
+                image: "./images/L_PERAWATANLIKADIKLINIK.webp",
+            },
+            {
+                id: "Perawatan Luka Ke Rumah",
+                name: "2. Perawatan Luka Ke Rumah di Area Pontianak",
+                price: "Rp 200.000",
+                image: "./images/L_PERAWATANLUKAKERUMAHPASIENDIAREAPONTIANAK_1.webp",
+            },
+            {
+                id: "L_SENDALDIABETES",
+                name: "3. Sendal Diabetes",
+                price: "Rp 500.000",
+                image: "./images/L_SENDALDIABETES.webp",
+            }
+        ]
+    },
+    perawatan2: {
+        title: "Perawatan Kecantikan",
+        description: "Pilih jenis perawatan kecantikan yang Anda butuhkan",
+        type: "checkbox",
+        options: [
+            {
+                id: "A_TAHILALAT(NEAVY)_1",
+                name: "1. Tahi Lalat (Neavy)_1",
+                price: "Rp 500.000",
+                image: "./images/A_TAHILALAT(NEAVY).webp",
+            },
+            {
+                id: "A_TAHILALAT(NEAVY)_2_7",
+                name: "2. Tahi Lalat (Neavy)_2-7",
+                price: "Rp 1.000.000",
+                image: "./images/A_TAHILALAT(NEAVY).webp",
+            },
+            {
+                id: "A_TAHILALAT(NEAVY)_8_SEWAJAH",
+                name: "3. Tahi Lalat (Neavy)_8-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_TAHILALAT(NEAVY).webp",
+            },
+            {
+                id: "A_KUTIL(SKINTAG)_1_10",
+                name: "4. Kutil (SKintag)_1-10",
+                price: "Rp 500.000",
+                image: "./images/A_KUTIL(SKINTAG).webp",
+            },
+            {
+                id: "A_KUTIL(SKINTAG)_11_30",
+                name: "5. Kutil (SKintag)_11-30",
+                price: "Rp 1.000.000",
+                image: "./images/A_KUTIL(SKINTAG).webp",
+            },
+            {
+                id: "A_KUTIL(SKINTAG)_31_SEWAJAH",
+                name: "6. Kutil (SKintag)_31-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_KUTIL(SKINTAG).webp",
+            },
+            {
+                id: "A_FLEKHITAM(MELASMA)",
+                name: "7. Flek Hitam (Melasma)",
+                price: "Rp 350.000",
+                image: "./images/A_FLEKHITAM(MELASMA).webp",
+            },
+            {
+                id: "A_FLEKBULE(FREACKLES)_1_20",
+                name: "8. Flek Bule (Freackles)_1-20",
+                price: "Rp 500.000",
+                image: "./images/A_FLEKBULE(FREACKLES).webp",
+            },
+            {
+                id: "A_FLEKBULE(FREACKLES)_21_50",
+                name: "9. Flek Bule (Freackles)_21-50",
+                price: "Rp 1.000.000",
+                image: "./images/A_FLEKBULE(FREACKLES).webp",
+            },
+            {
+                id: "A_FLEKBULE(FREACKLES)_50_SEWAJAH",
+                name: "10. Flek Bule (Freackles)_50-Sewajah",
+                price: "Rp 1.500.000",
+                image: "./images/A_FLEKBULE(FREACKLES).webp",
+            },
+            {
+                id: "A_SEBOROIKKERATOSIS_1_10",
+                name: "11. Seboroik Keratosis_1-10",
+                price: "Rp 500.000",
+                image: "./images/A_SEBOROIKKERATOSIS.webp",
+            },
+            {
+                id: "A_SEBOROIKKERATOSIS_11_30",
+                name: "12. Seboroik Keratosis_11-30",
+                price: "Rp 1.000.000",
+                image: "./images/A_SEBOROIKKERATOSIS.webp",
+            },
+            {
+                id: "A_SEBOROIKKERATOSIS_31_SEWAJAH",
+                name: "13. Seboroik Keratosis_31-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_SEBOROIKKERATOSIS.webp",
+            },
+            {
+                id: "A_BABAK(NEVUSOFOTA)",
+                name: "14. Babak (Nevusofota)",
+                price: "Rp 350.000",
+                image: "./images/A_BABAK(NEVUSOFOTA).webp",
+            },
+            {
+                id: "A_NEVUSOFHORY",
+                name: "15. Nevusofhory",
+                price: "Rp 350.000",
+                image: "./images/A_NEVUSOFHORY.webp",
+            },
+            {
+                id: "A_LENTIGO_1",
+                name: "16. Lentigo_1",
+                price: "Rp 500.000",
+                image: "./images/A_LENTIGO.webp",
+            },
+            {
+                id: "A_LENTIGO_2_7",
+                name: "17. Lentigo_2-7",
+                price: "Rp 1.000.000",
+                image: "./images/A_LENTIGO.webp",
+            },
+            {
+                id: "A_LENTIGO_8_SEWAJAH",
+                name: "18. Lentigo_8-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_LENTIGO.webp",
+            },
+            {
+                id: "A_NODAKOPISUSU(CAVEAULAITMACULE)",
+                name: "19. Noda Kopi Susu (Caveau Lait Macule)",
+                price: "Rp 500.000",
+                image: "./images/A_NODAKOPISUSU(CAVEAULAITMACULE).webp",
+            },
+            {
+                id: "A_GOSONGKARENAJENUHPAKAIKRIMRACIKAN(ONCHRONOSIS)",
+                name: "20. Gosong Karena Jenuh Pakai Krim Racikan (Onchronosis)",
+                price: "Rp 500.000",
+                image: "./images/A_GOSONGKARENAJENUHPAKAIKRIMRACIKAN(ONCHRONOSIS).webp",
+            },
+            {
+                id: "A_NODABEKASLUKA(HIPERPIGMENTASI)",
+                name: "21. Noda Bekas Luka (Hiperpigmentasi)",
+                price: "Rp 550.000",
+                image: "./images/A_NODABEKASLUKA(HIPERPIGMENTASI).webp",
+            },
+            {
+                id: "A_LASERTATO4X4CM",
+                name: "22. Laser Tato 4x4cm",
+                price: "Rp 350.000",
+                image: "./images/A_LASERTATO4X4CM.webp",
+            },
+            {
+                id: "A_XENTALASMA",
+                name: "23. Xentalasma",
+                price: "Rp 500.000",
+                image: "./images/A_XENTALASMA.webp",
+            },
+            {
+                id: "A_BLOODSPOT",
+                name: "24. Blood Spot_1-10",
+                price: "Rp 500.000",
+                image: "./images/A_BLOODSPOT.webp",
+            },
+            {
+                id: "A_BLOODSPOT_11_30",
+                name: "25. Blood Spot_11-30",
+                price: "Rp 1.000.000",
+                image: "./images/A_BLOODSPOT.webp",
+            },
+            {
+                id: "A_BLOODSPOT_31_SEWAJAH",
+                name: "26. Blood Spot_31-Sewajah",
+                price: "Rp 500.000",
+                image: "./images/A_BLOODSPOT.webp",
+            },
+            {
+                id: "A_TOMPEL3X3CM",
+                name: "27. Tompel 3x3cm",
+                price: "Rp 500.000",
+                image: "./images/A_TOMPEL.webp",
+            },
+            {
+                id: "A_MILLIA_1_10",
+                name: "28. Millia_1-10",
+                price: "Rp 500.000",
+                image: "./images/A_MILLIA.webp",
+            },
+            {
+                id: "A_MILLIA_11_30",
+                name: "29. Millia_11-30",
+                price: "Rp 1.000.000",
+                image: "./images/A_MILLIA.webp",
+            },
+            {
+                id: "A_MILLIA_31_SEWAJAH",
+                name: "30. Millia_31-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_MILLIA.webp",
+            },
+            {
+                id: "A_SYRINGOMA_1_10",
+                name: "31. Syringoma_1-10",
+                price: "Rp 500.000",
+                image: "./images/A_SYRINGOMA.webp",
+            },
+            {
+                id: "A_SYRINGOMA_11_30",
+                name: "32. Syringoma_11-30",
+                price: "Rp 1.000.000",
+                image: "./images/A_SYRINGOMA.webp",
+            },
+            {
+                id: "A_SYRINGOMA_31_SEWAJAH",
+                name: "33. Syringoma_31-SEWAJAH",
+                price: "Rp 1.500.000",
+                image: "./images/A_SYRINGOMA.webp",
+            },
+            {
+                id: "A_MATAIKAN(CLAVUS)",
+                name: "34. Mata Ikan (Clavus)",
+                price: "Rp 500.000",
+                image: "./images/A_MATAIKAN(CLAVUS).webp",
+            },
+            {
+                id: "A_KANTUNGMATA(EYEBAG)",
+                name: "35. Kantung Mata (Eyebag)",
+                price: "Rp 550.000",
+                image: "./images/A_KANTUNGMATA(EYEBAG).webp",
+            },
+            {
+                id: "A_KERIPUT(WRINCLE)",
+                name: "36. Keriput (Wrincle)",
+                price: "Rp 550.000",
+                image: "./images/A_KERIPUT(WRINCLE).webp",
+            },
+            {
+                id: "A_STRETCHMARK",
+                name: "37. Stretchmark",
+                price: "Rp 550.000",
+                image: "./images/A_STRETCHMARK.webp",
+            },
+            {
+                id: "A_KOMEDOHITAM(BLACKHEAD)",
+                name: "38. Komedo Hitam (Blackhead)",
+                price: "Rp 150.000",
+                image: "./images/A_KOMEDOHITAM(BLACKHEAD).webp",
+            },
+            {
+                id: "A_KOMEDOPUTIH(WHITEHEAD)",
+                name: "39. Komedo Putih (Whitehead)",
+                price: "Rp 150.000",
+                image: "./images/A_KOMEDOPUTIH(WHITEHEAD).webp",
+            },
+            {
+                id: "A_JERAWAT(ACNE)",
+                name: "40. Jerawat (Acne)",
+                price: "Rp 250.000",
+                image: "./images/A_JERAWAT(ACNE).webp",
+            },
+            {
+                id: "A_NODABEKASJERAWAT(ACNESPOT)",
+                name: "41. Noda Bekas Jerawat (Acne Spot)",
+                price: "Rp 500.000",
+                image: "./images/A_NODABEKASJERAWAT(ACNESPOT).webp",
+            },
+            {
+                id: "A_BOPENG(ACNESCAR)",
+                name: "42. Bopeng (Acne Scar)",
+                price: "Rp 550.000",
+                image: "./images/A_BOPENG(ACNESCAR).webp",
+            },
+            {
+                id: "A_BEKASCACAR(SMALLPOXSCAR)",
+                name: "43. Bekas Cacar (Smallpox scar)",
+                price: "Rp 550.000",
+                image: "./images/A_BEKASCACAR(SMALLPOXSCAR).webp",
+            },
+            {
+                id: "A_BEKASLUKACEKUNG(SCAR)",
+                name: "44. Bekas Luka Cekung (Scar)",
+                price: "Rp 550.000",
+                image: "./images/A_BEKASLUKACEKUNG(SCAR).webp",
+            },
+            {
+                id: "A_KELLOID",
+                name: "45. Kelloid",
+                price: "Rp 550.000",
+                image: "./images/A_KELLOID.webp",
+            },
+            {
+                id: "A_SPIDERVEIN",
+                name: "46. Spidervein",
+                price: "Rp 350.000",
+                image: "./images/A_SPIDERVEIN.webp",
+            },
+            {
+                id: "A_KAPALAN(CALLOUS)",
+                name: "47. Kapalan (Callous)",
+                price: "Rp 300.000",
+                image: "./images/A_KAPALAN(CALLOUS).webp",
+            },   
+            {
+                id: "A_KAKIPECAH-PECAH(FISURA)",
+                name: "48. Kaki Pecah-Pecah (Fisura)",
+                price: "Rp 300.000",
+                image: "./images/A_KAKIPECAH-PECAH(FISURA).webp",
+            },
+            {
+                id: "A_MENCERAHKAN(BRIGHTENING)",
+                name: "49. Mencerahkan (Brightening)",
+                price: "Rp 350.000",
+                image: "./images/A_MENCERAHKAN(BRIGHTENING).webp",
+            }, 
+            {
+                id: "A_CHEMICALPEELING",
+                name: "50. Chemical Peeling",
+                price: "Rp 500.000",
+                image: "./images/A_CHEMICALPEELING.webp",
+            },
+            {
+                id: "A_BB_GLOW",
+                name: "51. BB Glow",
+                price: "Rp 380.000",
+                image: "./images/A_BB_GLOW.webp",
+            },
+            {
+                id: "A_DETOX",
+                name: "52. Detox",
+                price: "Rp 300.000",
+                image: "./images/A_DETOX.webp",
+            },
+            {
+                id: "A_RFSLIMING",
+                name: "53. Rfslimng",
+                price: "Rp 350.000",
+                image: "./images/A_RFSLIMING.webp",
+            }
+        ]
+    },
+    perawatan3: {
+        title: "Sunat Modern",
+        description: "Pilih metode sunat yang sesuai dengan kebutuhan",
+        type: "checkbox",
+        options: [
+            {
+                id: "S_RING",
+                name: "1. Sunat Ring",
+                price: "Rp 1.200.000",
+                image: "./images/S_RING.webp",
+            },
+            {
+                id: "S_RING(EXTRAMAINAN)",
+                name: "2. Sunat Ring Extra Mainan",
+                price: "Rp 1.500.000",
+                image: "./images/S_RING(EXTRAMAINAN).webp",
+            },
+            {
+                id: "S_TEKNOSEALER",
+                name: "3. Sunat Tekno Sealer",
+                price: "Rp 2.500.000",
+                image: "./images/S_TEKNOSEALER.webp",
+            },
+            {
+                id: "S_TEKNOSEALER(EXTRAMAINAN)",
+                name: "4. Sunat Tekno Sealer Extra Mainan",
+                price: "Rp 2.800.000",
+                image: "./images/S_TECHNOSEALER(EXTRAMAINAN).webp",
+            },
+            {
+                id: "S_CIRCLECLAMP",
+                name: "5. Sunat Circle Clamp",
+                price: "Rp 1.200.000",
+                image: "./images/S_CIRCLECLAMP.webp",
+            },
+            {
+                id: "S_CIRCLECLAMP(EXTRAMAINAN)",
+                name: "6. Sunat Circle Clamp Extra Mainan",
+                price: "Rp 1.500.000",
+                image: "./images/S_CIRCLECLAMP(EXTRAMAINAN).webp",
+            }
+        ]
+    },
+    perawatan4: {
+        title: "Hipnoterapi",
+        description: "Pilih jenis terapi hipnoterapi yang sesuai dengan kebutuhan Anda",
+        type: "checkbox",
+        options: [
+            {
+                id: "H_BERHENTIJUDOL",
+                name: "1. Berhenti Judol",
+                price: "Rp 500.000",
+                image: "./images/H_BERHENTIJUDOL.webp",
+            },
+            {
+                id: "H_BERHENTIMEROKOK",
+                name: "2. Berhenti Merokok",
+                price: "Rp 500.000",
+                image: "./images/H_BERHENTIMEROKOK.webp",
+            },
+            {
+                id: "H_BERHENTISELINGKUH",
+                name: "3. Berhenti Selingkuh",
+                price: "Rp 500.000",
+                image: "./images/H_BERHENTISELINGKUH.webp",
+            },
+            {
+                id: "H_MELUPAKANMANTAN",
+                name: "4. Melupakan Mantan",
+                price: "Rp 500.000",
+                image: "./images/H_MELUPAKANMANTAN.webp",
+            },
+            {
+                id: "H_MENGHILANGKANFOBIA",
+                name: "5. Menghilangkan Fobia",
+                price: "Rp 500.000",
+                image: "./images/H_MENGHILANGKANFOBIA.webp",
+            }
+        ]
+    },
+    perawatan5: {
+        title: "Skincare",
+        description: "Pilih produk skincare yang sesuai dengan kebutuhan kulit Anda",
+        type: "checkbox",
+        options: [
+            {
+                id: "SK_BBCREAMACNE",
+                name: "1. BB Cream Acne",
+                price: "Rp 160.000",
+                image: "./images/SK_BBCREAMACNE.webp",
+            },
+            {
+                id: "SK_FACIALSOAPSALICID",
+                name: "2. Facial Soap Salicid",
+                price: "Rp 170.000",
+                image: "./images/SK_FACIALSOAPSALICID.webp",
+            },
+            {
+                id: "SK_HYDROGENPUDDINGMOISTURIZING",
+                name: "3. Hydrogen Pudding Moisturizing",
+                price: "Rp 210.000",
+                image: "./images/SK_HYDROGENPUDDINGMOISTURIZING.webp",
+            },
+            {
+                id: "SK_KRIMACNEMALAM",
+                name: "4. Krim Acne Malam",
+                price: "Rp 160.000",
+                image: "./images/SK_FACIALSOAPSALICID.webp",
+            },
+            {
+                id: "SK_PAKETPEMBERSIHLIGHTENING",
+                name: "5. Paket Pembersih Lightening",
+                price: "Rp 440.000",
+                image: "./images/SK_PAKETPEMBERSIHLIGHTENING.webp",
+            },
+            {
+                id: "SK_SERUMGLOWING",
+                name: "6. Serum Glowing",
+                price: "Rp 170.000",
+                image: "./images/SK_SERUMGLOWING.webp",
+            },
+            {
+                id: "SK_SUNSCREENACNE",
+                name: "7. Sunscreen Acne",
+                price: "Rp 150.000",
+                image: "./images/SK_SUNSCREENACNE.webp",
+            },
+            {
+                id: "SK_SUNSCREENPUDDING",
+                name: "8. Sunscreen Pundding",
+                price: "Rp 200.000",
+                image: "./images/SK_SUNSCREENPUDDING.webp",
+            },
+            {
+                id: "SK_WHITENING",
+                name: "9. Whitening",
+                price: "Rp 215.000",
+                image: "./images/SK_WHITENING.webp",
+            }
+        ]
+    }
+};
+    
 // ===== UTILITY FUNCTIONS =====
 function extractPrice(priceString) {
     if (!priceString) return 0;
