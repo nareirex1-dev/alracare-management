@@ -3,13 +3,61 @@ let bookings = [];
 let services = {};
 let gallery = [];
 let settings = {};
+let currentUser = null;
+
+// ===== AUTHENTICATION =====
+function checkAuthentication() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = 'index.html';
+        return false;
+    }
+    return true;
+}
+
+async function verifyToken() {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.VERIFY);
+        if (response.success) {
+            currentUser = response.data.user;
+            updateUserDisplay();
+            return true;
+        } else {
+            logout();
+            return false;
+        }
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        logout();
+        return false;
+    }
+}
+
+function updateUserDisplay() {
+    const userNameElement = document.querySelector('.user-name');
+    if (userNameElement && currentUser) {
+        userNameElement.textContent = currentUser.username || 'Administrator';
+    }
+}
+
+function logout() {
+    localStorage.removeItem('authToken');
+    window.location.href = 'index.html';
+}
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Alra Care Admin Panel initialized');
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('Alra Care Admin Panel (API Version) initialized');
     
-    // Load data from localStorage
-    loadData();
+    // Check authentication
+    if (!checkAuthentication()) return;
+    
+    // Verify token
+    const isValid = await verifyToken();
+    if (!isValid) return;
+    
+    // Load data from API
+    await loadAllData();
     
     // Setup navigation
     setupNavigation();
@@ -23,51 +71,78 @@ document.addEventListener('DOMContentLoaded', function() {
     displayServiceCategories();
     displayServiceOptions();
     displayGallery();
-    
-    // Load settings into forms
     loadSettingsIntoForms();
 });
 
-// ===== DATA MANAGEMENT =====
-function loadData() {
+// ===== DATA MANAGEMENT - API INTEGRATION =====
+async function loadAllData() {
     try {
-        // Load bookings
-        const storedBookings = localStorage.getItem('klinikBookings');
-        bookings = storedBookings ? JSON.parse(storedBookings) : [];
+        showNotification('⏳ Memuat data dari server...', 'info');
         
-        // Load services
-        const storedServices = localStorage.getItem('serviceDetails');
-        services = storedServices ? JSON.parse(storedServices) : {};
+        // Load all data in parallel
+        await Promise.all([
+            loadBookings(),
+            loadServices(),
+            loadGallery(),
+            loadSettings()
+        ]);
         
-        // Load gallery
-        const storedGallery = localStorage.getItem('klinikGallery');
-        gallery = storedGallery ? JSON.parse(storedGallery) : [];
-        
-        // Load settings
-        const storedSettings = localStorage.getItem('adminSettings');
-        settings = storedSettings ? JSON.parse(storedSettings) : {};
-        
-        console.log('Data loaded successfully');
+        showNotification('✅ Data berhasil dimuat', 'success');
     } catch (error) {
         console.error('Error loading data:', error);
-        // Initialize with empty data if there's an error
-        bookings = [];
-        services = {};
-        gallery = [];
-        settings = {};
+        showNotification('❌ Gagal memuat data dari server', 'error');
     }
 }
 
-function saveData() {
+async function loadBookings() {
     try {
-        localStorage.setItem('klinikBookings', JSON.stringify(bookings));
-        localStorage.setItem('serviceDetails', JSON.stringify(services));
-        localStorage.setItem('klinikGallery', JSON.stringify(gallery));
-        localStorage.setItem('adminSettings', JSON.stringify(settings));
-        console.log('Data saved successfully');
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKINGS);
+        if (response.success) {
+            bookings = response.data || [];
+            console.log('Bookings loaded:', bookings.length);
+        }
     } catch (error) {
-        console.error('Error saving data:', error);
-        showNotification('Error menyimpan data', 'error');
+        console.error('Error loading bookings:', error);
+        bookings = [];
+    }
+}
+
+async function loadServices() {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.SERVICES);
+        if (response.success) {
+            services = response.data || {};
+            console.log('Services loaded:', Object.keys(services).length);
+        }
+    } catch (error) {
+        console.error('Error loading services:', error);
+        services = {};
+    }
+}
+
+async function loadGallery() {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.GALLERY);
+        if (response.success) {
+            gallery = response.data || [];
+            console.log('Gallery loaded:', gallery.length);
+        }
+    } catch (error) {
+        console.error('Error loading gallery:', error);
+        gallery = [];
+    }
+}
+
+async function loadSettings() {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.SETTINGS);
+        if (response.success) {
+            settings = response.data || {};
+            console.log('Settings loaded');
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        settings = {};
     }
 }
 
@@ -79,24 +154,18 @@ function setupNavigation() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Remove active class from all links
             navLinks.forEach(l => l.classList.remove('active'));
-            
-            // Add active class to clicked link
             this.classList.add('active');
             
-            // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             
-            // Show selected page
             const pageId = this.getAttribute('data-page');
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.add('active');
                 
-                // Refresh data for specific pages
                 if (pageId === 'dashboard') {
                     displayDashboardData();
                 } else if (pageId === 'bookings') {
@@ -113,51 +182,33 @@ function setupNavigation() {
 }
 
 // ===== DASHBOARD FUNCTIONS =====
-function displayDashboardData() {
+async function displayDashboardData() {
     try {
-        // Calculate dashboard statistics
-        const totalBookings = bookings.length;
-        const today = new Date().toISOString().split('T')[0];
-        const todayBookings = bookings.filter(booking => 
-            booking.appointmentInfo && booking.appointmentInfo.date === today
-        ).length;
+        // Get stats from API
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKING_STATS);
         
-        // Calculate monthly revenue
-        const monthlyRevenue = bookings.reduce((total, booking) => {
-            let price = 0;
-            if (booking.serviceInfo && booking.serviceInfo.selectedOptions) {
-                booking.serviceInfo.selectedOptions.forEach(option => {
-                    if (option.price) {
-                        const priceMatch = option.price.match(/(\d+\.?\d*)/g);
-                        if (priceMatch) {
-                            price += parseInt(priceMatch[0].replace(/\./g, '')) || 0;
-                        }
-                    }
-                });
-            }
-            return total + price;
-        }, 0);
+        if (response.success && response.data) {
+            const stats = response.data;
+            
+            const totalBookingsEl = document.getElementById('totalBookings');
+            const todayBookingsEl = document.getElementById('todayBookings');
+            const monthlyRevenueEl = document.getElementById('monthlyRevenue');
+            const availableServicesEl = document.getElementById('availableServices');
+            
+            if (totalBookingsEl) totalBookingsEl.textContent = stats.total_bookings || 0;
+            if (todayBookingsEl) todayBookingsEl.textContent = stats.pending_bookings || 0;
+            if (monthlyRevenueEl) monthlyRevenueEl.textContent = 'Rp ' + (parseInt(stats.total_revenue) || 0).toLocaleString('id-ID');
+            
+            // Count services
+            let serviceCount = 0;
+            Object.keys(services).forEach(category => {
+                if (services[category] && services[category].options) {
+                    serviceCount += services[category].options.length;
+                }
+            });
+            if (availableServicesEl) availableServicesEl.textContent = serviceCount;
+        }
         
-        // Count available services
-        let serviceCount = 0;
-        Object.keys(services).forEach(category => {
-            if (services[category] && services[category].options) {
-                serviceCount += services[category].options.length;
-            }
-        });
-        
-        // Update dashboard cards
-        const totalBookingsEl = document.getElementById('totalBookings');
-        const todayBookingsEl = document.getElementById('todayBookings');
-        const monthlyRevenueEl = document.getElementById('monthlyRevenue');
-        const availableServicesEl = document.getElementById('availableServices');
-        
-        if (totalBookingsEl) totalBookingsEl.textContent = totalBookings;
-        if (todayBookingsEl) todayBookingsEl.textContent = todayBookings;
-        if (monthlyRevenueEl) monthlyRevenueEl.textContent = 'Rp ' + monthlyRevenue.toLocaleString('id-ID');
-        if (availableServicesEl) availableServicesEl.textContent = serviceCount;
-        
-        // Display recent bookings
         displayRecentBookings();
     } catch (error) {
         console.error('Error displaying dashboard data:', error);
@@ -183,16 +234,13 @@ function displayRecentBookings() {
     }
     
     tableBody.innerHTML = recentBookings.map(booking => {
-        if (!booking.appointmentInfo) return '';
-        
-        const appointmentDate = new Date(booking.appointmentInfo.datetime);
-        const formattedDate = appointmentDate.toLocaleDateString('id-ID');
+        const formattedDate = new Date(booking.appointment_date).toLocaleDateString('id-ID');
         
         return `
             <tr>
-                <td>${booking.bookingId || 'N/A'}</td>
-                <td>${booking.patientInfo?.name || 'N/A'}</td>
-                <td>${booking.serviceInfo?.serviceName || 'N/A'}</td>
+                <td>${booking.id || 'N/A'}</td>
+                <td>${booking.patient_name || 'N/A'}</td>
+                <td>${getServiceNames(booking.booking_services)}</td>
                 <td>${formattedDate}</td>
                 <td>
                     <span class="status-badge status-${booking.status || 'pending'}">
@@ -201,10 +249,10 @@ function displayRecentBookings() {
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="viewBooking('${booking.bookingId}')" title="Lihat Detail">
+                        <button class="btn btn-outline-primary" onclick="viewBooking('${booking.id}')" title="Lihat Detail">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-outline-success" onclick="updateBookingStatus('${booking.bookingId}', 'confirmed')" title="Konfirmasi" ${booking.status === 'confirmed' ? 'disabled' : ''}>
+                        <button class="btn btn-outline-success" onclick="updateBookingStatus('${booking.id}', 'confirmed')" title="Konfirmasi" ${booking.status === 'confirmed' ? 'disabled' : ''}>
                             <i class="fas fa-check"></i>
                         </button>
                     </div>
@@ -212,6 +260,11 @@ function displayRecentBookings() {
             </tr>
         `;
     }).join('');
+}
+
+function getServiceNames(bookingServices) {
+    if (!bookingServices || bookingServices.length === 0) return 'N/A';
+    return bookingServices.map(s => s.service_name).join(', ');
 }
 
 // ===== BOOKING MANAGEMENT =====
@@ -231,25 +284,20 @@ function displayAllBookings() {
         return;
     }
     
-    // Sort bookings by date (newest first)
     const sortedBookings = [...bookings].sort((a, b) => 
-        new Date(b.bookingDate || 0) - new Date(a.bookingDate || 0)
+        new Date(b.created_at || 0) - new Date(a.created_at || 0)
     );
     
     tableBody.innerHTML = sortedBookings.map(booking => {
-        if (!booking.appointmentInfo) return '';
-        
-        const appointmentDate = new Date(booking.appointmentInfo.datetime);
-        const formattedDate = appointmentDate.toLocaleDateString('id-ID');
-        const formattedTime = booking.appointmentInfo.time || 'N/A';
+        const formattedDate = new Date(booking.appointment_date).toLocaleDateString('id-ID');
         
         return `
             <tr>
-                <td>${booking.bookingId || 'N/A'}</td>
-                <td>${booking.patientInfo?.name || 'N/A'}</td>
-                <td>${booking.patientInfo?.phone || 'N/A'}</td>
-                <td>${booking.serviceInfo?.serviceName || 'N/A'}</td>
-                <td>${formattedDate} ${formattedTime}</td>
+                <td>${booking.id || 'N/A'}</td>
+                <td>${booking.patient_name || 'N/A'}</td>
+                <td>${booking.patient_phone || 'N/A'}</td>
+                <td>${getServiceNames(booking.booking_services)}</td>
+                <td>${formattedDate} ${booking.appointment_time || ''}</td>
                 <td>
                     <span class="status-badge status-${booking.status || 'pending'}">
                         ${getStatusText(booking.status)}
@@ -257,19 +305,19 @@ function displayAllBookings() {
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="viewBooking('${booking.bookingId}')" title="Lihat Detail">
+                        <button class="btn btn-outline-primary" onclick="viewBooking('${booking.id}')" title="Lihat Detail">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-outline-success" onclick="updateBookingStatus('${booking.bookingId}', 'confirmed')" title="Konfirmasi" ${booking.status === 'confirmed' ? 'disabled' : ''}>
+                        <button class="btn btn-outline-success" onclick="updateBookingStatus('${booking.id}', 'confirmed')" title="Konfirmasi" ${booking.status === 'confirmed' ? 'disabled' : ''}>
                             <i class="fas fa-check"></i>
                         </button>
-                        <button class="btn btn-outline-warning" onclick="updateBookingStatus('${booking.bookingId}', 'pending')" title="Tunda" ${booking.status === 'pending' ? 'disabled' : ''}>
+                        <button class="btn btn-outline-warning" onclick="updateBookingStatus('${booking.id}', 'pending')" title="Tunda" ${booking.status === 'pending' ? 'disabled' : ''}>
                             <i class="fas fa-clock"></i>
                         </button>
-                        <button class="btn btn-outline-danger" onclick="updateBookingStatus('${booking.bookingId}', 'cancelled')" title="Batalkan" ${booking.status === 'cancelled' ? 'disabled' : ''}>
+                        <button class="btn btn-outline-danger" onclick="updateBookingStatus('${booking.id}', 'cancelled')" title="Batalkan" ${booking.status === 'cancelled' ? 'disabled' : ''}>
                             <i class="fas fa-times"></i>
                         </button>
-                        <button class="btn btn-outline-secondary" onclick="deleteBooking('${booking.bookingId}')" title="Hapus">
+                        <button class="btn btn-outline-secondary" onclick="deleteBooking('${booking.id}')" title="Hapus">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -279,212 +327,180 @@ function displayAllBookings() {
     }).join('');
 }
 
-function viewBooking(bookingId) {
-    const booking = bookings.find(b => b.bookingId === bookingId);
-    if (!booking) {
-        showNotification('Booking tidak ditemukan', 'error');
-        return;
-    }
-    
-    const appointmentDate = new Date(booking.appointmentInfo.datetime);
-    const formattedDate = appointmentDate.toLocaleDateString('id-ID', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    const servicesHTML = booking.serviceInfo?.selectedOptions ? 
-        booking.serviceInfo.selectedOptions.map(option => `
-            <div class="bg-light p-3 mb-2 rounded border-start border-4 border-primary">
-                <div class="fw-bold small">${option.name || 'N/A'}</div>
-                <div class="text-muted small">${option.price || 'N/A'}</div>
-            </div>
-        `).join('') : '';
-    
-    const content = `
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">ID Booking</label>
-                <div class="form-control bg-light">${booking.bookingId || 'N/A'}</div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Status</label>
-                <div class="form-control bg-light">
-                    <span class="status-badge status-${booking.status || 'pending'}">
-                        ${getStatusText(booking.status)}
-                    </span>
+async function viewBooking(bookingId) {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKING_BY_ID(bookingId));
+        if (!response.success || !response.data) {
+            showNotification('Booking tidak ditemukan', 'error');
+            return;
+        }
+        
+        const booking = response.data;
+        const formattedDate = new Date(booking.appointment_date).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const servicesHTML = booking.booking_services ? 
+            booking.booking_services.map(service => `
+                <div class="bg-light p-3 mb-2 rounded border-start border-4 border-primary">
+                    <div class="fw-bold small">${service.service_name || 'N/A'}</div>
+                    <div class="text-muted small">${service.service_price || 'N/A'}</div>
                 </div>
-            </div>
-        </div>
+            `).join('') : '';
         
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Nama Pasien</label>
-                <div class="form-control bg-light">${booking.patientInfo?.name || 'N/A'}</div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Telepon</label>
-                <div class="form-control bg-light">${booking.patientInfo?.phone || 'N/A'}</div>
-            </div>
-        </div>
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Alamat</label>
-            <div class="form-control bg-light" style="min-height: 80px;">${booking.patientInfo?.address || 'N/A'}</div>
-        </div>
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Layanan</label>
-            <div class="form-control bg-light">${booking.serviceInfo?.serviceName || 'N/A'}</div>
-        </div>
-        
-        ${servicesHTML ? `
-        <div class="mb-3">
-            <label class="form-label fw-bold">Detail Layanan</label>
-            ${servicesHTML}
-        </div>
-        ` : ''}
-        
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Tanggal Perawatan</label>
-                <div class="form-control bg-light">${formattedDate}</div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Jam Perawatan</label>
-                <div class="form-control bg-light">${booking.appointmentInfo?.time || 'N/A'}</div>
-            </div>
-        </div>
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Catatan</label>
-            <div class="form-control bg-light" style="min-height: 80px;">${booking.patientInfo?.notes || 'Tidak ada catatan'}</div>
-        </div>
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Tanggal Booking</label>
-            <div class="form-control bg-light">${new Date(booking.bookingDate).toLocaleString('id-ID')}</div>
-        </div>
-        
-        <div class="d-flex gap-2 justify-content-end mt-4">
-            <button type="button" class="btn btn-primary" onclick="printBookingDetails('${booking.bookingId}')">
-                <i class="fas fa-print me-1"></i> Cetak
-            </button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="fas fa-times me-1"></i> Tutup
-            </button>
-        </div>
-    `;
-    
-    // Create a temporary modal for viewing booking details
-    const modalHTML = `
-        <div class="modal fade" id="bookingDetailModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Detail Booking</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        ${content}
+        const content = `
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">ID Booking</label>
+                    <div class="form-control bg-light">${booking.id || 'N/A'}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <div class="form-control bg-light">
+                        <span class="status-badge status-${booking.status || 'pending'}">
+                            ${getStatusText(booking.status)}
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-    
-    // Remove existing modal if any
-    const existingModal = document.getElementById('bookingDetailModal');
-    if (existingModal) {
-        existingModal.remove();
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Nama Pasien</label>
+                    <div class="form-control bg-light">${booking.patient_name || 'N/A'}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Telepon</label>
+                    <div class="form-control bg-light">${booking.patient_phone || 'N/A'}</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Alamat</label>
+                <div class="form-control bg-light" style="min-height: 80px;">${booking.patient_address || 'N/A'}</div>
+            </div>
+            
+            ${servicesHTML ? `
+            <div class="mb-3">
+                <label class="form-label fw-bold">Detail Layanan</label>
+                ${servicesHTML}
+            </div>
+            ` : ''}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Tanggal Perawatan</label>
+                    <div class="form-control bg-light">${formattedDate}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Jam Perawatan</label>
+                    <div class="form-control bg-light">${booking.appointment_time || 'N/A'}</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Catatan</label>
+                <div class="form-control bg-light" style="min-height: 80px;">${booking.patient_notes || 'Tidak ada catatan'}</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tanggal Booking</label>
+                <div class="form-control bg-light">${new Date(booking.created_at).toLocaleString('id-ID')}</div>
+            </div>
+            
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-primary" onclick="printBookingDetails('${booking.id}')">
+                    <i class="fas fa-print me-1"></i> Cetak
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Tutup
+                </button>
+            </div>
+        `;
+        
+        const modalHTML = `
+            <div class="modal fade" id="bookingDetailModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Detail Booking</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const existingModal = document.getElementById('bookingDetailModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
+        modal.show();
+        
+    } catch (error) {
+        console.error('Error viewing booking:', error);
+        showNotification('Gagal memuat detail booking', 'error');
     }
-    
-    // Add new modal to body
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
-    modal.show();
 }
 
-function updateBookingStatus(bookingId, newStatus) {
-    const bookingIndex = bookings.findIndex(b => b.bookingId === bookingId);
-    if (bookingIndex === -1) {
-        showNotification('Booking tidak ditemukan', 'error');
-        return;
+async function updateBookingStatus(bookingId, newStatus) {
+    try {
+        showNotification('⏳ Mengupdate status...', 'info');
+        
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKING_STATUS(bookingId), {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.success) {
+            await loadBookings();
+            displayAllBookings();
+            displayRecentBookings();
+            displayDashboardData();
+            showNotification(`✅ Status booking berhasil diubah menjadi ${getStatusText(newStatus)}`, 'success');
+        } else {
+            throw new Error(response.message);
+        }
+    } catch (error) {
+        console.error('Error updating booking status:', error);
+        showNotification('❌ Gagal mengupdate status booking', 'error');
     }
-    
-    bookings[bookingIndex].status = newStatus;
-    bookings[bookingIndex].lastUpdated = new Date().toISOString();
-    
-    saveData();
-    displayAllBookings();
-    displayRecentBookings();
-    displayDashboardData();
-    
-    showNotification(`Status booking berhasil diubah menjadi ${getStatusText(newStatus)}`, 'success');
 }
 
-function deleteBooking(bookingId) {
+async function deleteBooking(bookingId) {
     if (!confirm('Apakah Anda yakin ingin menghapus booking ini?')) {
         return;
     }
     
-    const bookingIndex = bookings.findIndex(b => b.bookingId === bookingId);
-    if (bookingIndex === -1) {
-        showNotification('Booking tidak ditemukan', 'error');
-        return;
-    }
-    
-    bookings.splice(bookingIndex, 1);
-    saveData();
-    displayAllBookings();
-    displayRecentBookings();
-    displayDashboardData();
-    
-    showNotification('Booking berhasil dihapus', 'success');
-}
-
-function showAddBookingModal() {
-    // Populate service options
-    const serviceSelect = document.getElementById('newService');
-    if (serviceSelect) {
-        serviceSelect.innerHTML = '<option value="">Pilih Layanan</option>';
+    try {
+        showNotification('⏳ Menghapus booking...', 'info');
         
-        Object.keys(services).forEach(serviceId => {
-            const service = services[serviceId];
-            if (service && service.title) {
-                serviceSelect.innerHTML += `<option value="${serviceId}">${service.title}</option>`;
-            }
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKING_BY_ID(bookingId), {
+            method: 'DELETE'
         });
-    }
-    
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateInput = document.getElementById('newAppointmentDate');
-    if (dateInput) {
-        dateInput.value = tomorrow.toISOString().split('T')[0];
-        dateInput.min = new Date().toISOString().split('T')[0]; // Set min date to today
-    }
-    
-    // Populate time options
-    const timeSelect = document.getElementById('newAppointmentTime');
-    if (timeSelect) {
-        timeSelect.innerHTML = '<option value="">Pilih Jam</option>';
         
-        for (let hour = 8; hour <= 17; hour++) {
-            for (let minute = 0; minute < 60; minute += 30) {
-                if (hour === 17 && minute > 0) break;
-                const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
-            }
+        if (response.success) {
+            await loadBookings();
+            displayAllBookings();
+            displayRecentBookings();
+            displayDashboardData();
+            showNotification('✅ Booking berhasil dihapus', 'success');
+        } else {
+            throw new Error(response.message);
         }
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        showNotification('❌ Gagal menghapus booking', 'error');
     }
-    
-    const modal = new bootstrap.Modal(document.getElementById('addBookingModal'));
-    modal.show();
 }
 
 // ===== SERVICE MANAGEMENT =====
@@ -539,7 +555,6 @@ function displayServiceOptions() {
     
     let allOptions = [];
     
-    // Collect all service options from all categories
     Object.keys(services).forEach(serviceId => {
         const service = services[serviceId];
         if (service && service.options) {
@@ -591,29 +606,6 @@ function displayServiceOptions() {
     }).join('');
 }
 
-function showAddServiceModal() {
-    const modal = new bootstrap.Modal(document.getElementById('addServiceModal'));
-    modal.show();
-}
-
-function showAddServiceOptionModal() {
-    // Populate service categories
-    const serviceSelect = document.getElementById('newOptionService');
-    if (serviceSelect) {
-        serviceSelect.innerHTML = '<option value="">Pilih Kategori</option>';
-        
-        Object.keys(services).forEach(serviceId => {
-            const service = services[serviceId];
-            if (service && service.title) {
-                serviceSelect.innerHTML += `<option value="${serviceId}">${service.title}</option>`;
-            }
-        });
-    }
-    
-    const modal = new bootstrap.Modal(document.getElementById('addServiceOptionModal'));
-    modal.show();
-}
-
 // ===== GALLERY MANAGEMENT =====
 function displayGallery() {
     const grid = document.getElementById('galleryGrid');
@@ -629,16 +621,16 @@ function displayGallery() {
         return;
     }
     
-    grid.innerHTML = gallery.map((item, index) => {
+    grid.innerHTML = gallery.map(item => {
         return `
             <div class="col-md-6 col-lg-4 mb-3">
                 <div class="gallery-item">
-                    <img src="${item.url || ''}" alt="${item.title || 'Gallery Image'}" 
+                    <img src="${item.image_url || ''}" alt="${item.title || 'Gallery Image'}" 
                          class="img-fluid rounded">
                     <div class="mt-2">
                         <h6 class="mb-1">${item.title || 'Tanpa Judul'}</h6>
                         <p class="text-muted small mb-2">${item.description || 'Tidak ada deskripsi'}</p>
-                        <button class="btn btn-outline-danger btn-sm" onclick="deleteGalleryImage(${index})" title="Hapus Gambar">
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteGalleryImage('${item.id}')" title="Hapus Gambar">
                             <i class="fas fa-trash me-1"></i> Hapus
                         </button>
                     </div>
@@ -648,173 +640,37 @@ function displayGallery() {
     }).join('');
 }
 
-function showAddGalleryModal() {
-    const modal = new bootstrap.Modal(document.getElementById('addGalleryModal'));
-    modal.show();
-}
-
-function deleteGalleryImage(index) {
+async function deleteGalleryImage(imageId) {
     if (!confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
         return;
     }
     
-    gallery.splice(index, 1);
-    saveData();
-    displayGallery();
-    
-    showNotification('Gambar berhasil dihapus dari galeri', 'success');
+    try {
+        showNotification('⏳ Menghapus gambar...', 'info');
+        
+        const response = await apiCall(API_CONFIG.ENDPOINTS.GALLERY_BY_ID(imageId), {
+            method: 'DELETE'
+        });
+        
+        if (response.success) {
+            await loadGallery();
+            displayGallery();
+            showNotification('✅ Gambar berhasil dihapus dari galeri', 'success');
+        } else {
+            throw new Error(response.message);
+        }
+    } catch (error) {
+        console.error('Error deleting gallery image:', error);
+        showNotification('❌ Gagal menghapus gambar', 'error');
+    }
 }
 
 // ===== FORM HANDLING =====
 function setupForms() {
-    // Add Booking Form
-    const addBookingForm = document.getElementById('addBookingForm');
-    if (addBookingForm) {
-        addBookingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const serviceId = document.getElementById('newService').value;
-            const service = services[serviceId];
-            
-            if (!service) {
-                showNotification('Pilih layanan yang valid', 'error');
-                return;
-            }
-            
-            const bookingData = {
-                bookingId: 'BK' + Date.now(),
-                patientInfo: {
-                    name: document.getElementById('newPatientName').value,
-                    phone: document.getElementById('newPatientPhone').value,
-                    address: document.getElementById('newPatientAddress').value,
-                    notes: document.getElementById('newPatientNotes').value || 'Tidak ada catatan'
-                },
-                appointmentInfo: {
-                    date: document.getElementById('newAppointmentDate').value,
-                    time: document.getElementById('newAppointmentTime').value,
-                    datetime: new Date(document.getElementById('newAppointmentDate').value + 'T' + document.getElementById('newAppointmentTime').value).toISOString()
-                },
-                serviceInfo: {
-                    serviceId: serviceId,
-                    serviceName: service.title,
-                    selectedOptions: []
-                },
-                status: 'pending',
-                bookingDate: new Date().toISOString(),
-                lastUpdated: new Date().toISOString()
-            };
-            
-            bookings.push(bookingData);
-            saveData();
-            displayAllBookings();
-            displayRecentBookings();
-            displayDashboardData();
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addBookingModal'));
-            modal.hide();
-            this.reset();
-            
-            showNotification('Booking berhasil ditambahkan', 'success');
-        });
-    }
-    
-    // Add Service Form
-    const addServiceForm = document.getElementById('addServiceForm');
-    if (addServiceForm) {
-        addServiceForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const serviceId = document.getElementById('newServiceId').value.trim();
-            const serviceTitle = document.getElementById('newServiceTitle').value.trim();
-            const serviceDescription = document.getElementById('newServiceDescription').value.trim();
-            
-            if (!serviceId || !serviceTitle) {
-                showNotification('ID dan nama kategori harus diisi', 'error');
-                return;
-            }
-            
-            if (services[serviceId]) {
-                showNotification('ID layanan sudah ada', 'error');
-                return;
-            }
-            
-            services[serviceId] = {
-                title: serviceTitle,
-                description: serviceDescription,
-                type: "checkbox",
-                options: []
-            };
-            
-            saveData();
-            displayServiceCategories();
-            displayServiceOptions();
-            displayDashboardData();
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceModal'));
-            modal.hide();
-            this.reset();
-            
-            showNotification('Kategori layanan berhasil ditambahkan', 'success');
-        });
-    }
-    
-    // Add Service Option Form
-    const addServiceOptionForm = document.getElementById('addServiceOptionForm');
-    if (addServiceOptionForm) {
-        addServiceOptionForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const serviceId = document.getElementById('newOptionService').value;
-            const optionId = document.getElementById('newOptionId').value.trim();
-            const optionName = document.getElementById('newOptionName').value.trim();
-            const optionPrice = document.getElementById('newOptionPrice').value.trim();
-            const optionImage = document.getElementById('newOptionImage').value.trim();
-            
-            if (!services[serviceId]) {
-                showNotification('Kategori layanan tidak valid', 'error');
-                return;
-            }
-            
-            if (!optionId || !optionName || !optionPrice) {
-                showNotification('ID, nama, dan harga layanan harus diisi', 'error');
-                return;
-            }
-            
-            // Initialize options array if it doesn't exist
-            if (!services[serviceId].options) {
-                services[serviceId].options = [];
-            }
-            
-            // Check if option ID already exists in this service
-            if (services[serviceId].options.some(opt => opt.id === optionId)) {
-                showNotification('ID layanan sudah ada dalam kategori ini', 'error');
-                return;
-            }
-            
-            services[serviceId].options.push({
-                id: optionId,
-                name: optionName,
-                price: optionPrice,
-                image: optionImage
-            });
-            
-            saveData();
-            displayServiceOptions();
-            displayDashboardData();
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceOptionModal'));
-            modal.hide();
-            this.reset();
-            
-            showNotification('Layanan berhasil ditambahkan', 'success');
-        });
-    }
-    
     // Add Gallery Form
     const addGalleryForm = document.getElementById('addGalleryForm');
     if (addGalleryForm) {
-        addGalleryForm.addEventListener('submit', function(e) {
+        addGalleryForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const imageTitle = document.getElementById('newImageTitle').value.trim();
@@ -826,72 +682,74 @@ function setupForms() {
                 return;
             }
             
-            gallery.push({
-                title: imageTitle,
-                url: imageUrl,
-                description: imageDescription,
-                addedDate: new Date().toISOString()
-            });
-            
-            saveData();
-            displayGallery();
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addGalleryModal'));
-            modal.hide();
-            this.reset();
-            
-            showNotification('Gambar berhasil ditambahkan ke galeri', 'success');
+            try {
+                showNotification('⏳ Menambahkan gambar...', 'info');
+                
+                const response = await apiCall(API_CONFIG.ENDPOINTS.GALLERY, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: imageTitle,
+                        image_url: imageUrl,
+                        description: imageDescription
+                    })
+                });
+                
+                if (response.success) {
+                    await loadGallery();
+                    displayGallery();
+                    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addGalleryModal'));
+                    modal.hide();
+                    this.reset();
+                    
+                    showNotification('✅ Gambar berhasil ditambahkan ke galeri', 'success');
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error adding gallery image:', error);
+                showNotification('❌ Gagal menambahkan gambar', 'error');
+            }
         });
     }
     
     // General Settings Form
     const generalSettingsForm = document.getElementById('generalSettingsForm');
     if (generalSettingsForm) {
-        generalSettingsForm.addEventListener('submit', function(e) {
+        generalSettingsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (!settings.general) {
-                settings.general = {};
+            try {
+                showNotification('⏳ Menyimpan pengaturan...', 'info');
+                
+                const settingsData = {
+                    clinic_name: document.getElementById('clinicName').value,
+                    clinic_address: document.getElementById('clinicAddress').value,
+                    clinic_phone: document.getElementById('clinicPhone').value,
+                    clinic_email: document.getElementById('clinicEmail').value,
+                    business_hours: document.getElementById('businessHours').value
+                };
+                
+                const response = await apiCall(API_CONFIG.ENDPOINTS.SETTINGS, {
+                    method: 'PUT',
+                    body: JSON.stringify({ settings: settingsData })
+                });
+                
+                if (response.success) {
+                    await loadSettings();
+                    showNotification('✅ Pengaturan umum berhasil disimpan', 'success');
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('❌ Gagal menyimpan pengaturan', 'error');
             }
-            
-            settings.general = {
-                clinicName: document.getElementById('clinicName').value,
-                clinicAddress: document.getElementById('clinicAddress').value,
-                clinicPhone: document.getElementById('clinicPhone').value,
-                clinicEmail: document.getElementById('clinicEmail').value,
-                businessHours: document.getElementById('businessHours').value
-            };
-            
-            saveData();
-            showNotification('Pengaturan umum berhasil disimpan', 'success');
-        });
-    }
-    
-    // Social Settings Form
-    const socialSettingsForm = document.getElementById('socialSettingsForm');
-    if (socialSettingsForm) {
-        socialSettingsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!settings.social) {
-                settings.social = {};
-            }
-            
-            settings.social = {
-                instagram: document.getElementById('instagramAccounts').value.split(',').map(s => s.trim()).filter(s => s),
-                facebook: document.getElementById('facebookAccounts').value.split(',').map(s => s.trim()).filter(s => s),
-                youtube: document.getElementById('youtubeAccounts').value.split(',').map(s => s.trim()).filter(s => s),
-                tiktok: document.getElementById('tiktokAccounts').value.split(',').map(s => s.trim()).filter(s => s)
-            };
-            
-            saveData();
-            showNotification('Pengaturan media sosial berhasil disimpan', 'success');
         });
     }
 }
 
 function loadSettingsIntoForms() {
-    // Load general settings
     if (settings.general) {
         const clinicName = document.getElementById('clinicName');
         const clinicAddress = document.getElementById('clinicAddress');
@@ -899,24 +757,11 @@ function loadSettingsIntoForms() {
         const clinicEmail = document.getElementById('clinicEmail');
         const businessHours = document.getElementById('businessHours');
         
-        if (clinicName && settings.general.clinicName) clinicName.value = settings.general.clinicName;
-        if (clinicAddress && settings.general.clinicAddress) clinicAddress.value = settings.general.clinicAddress;
-        if (clinicPhone && settings.general.clinicPhone) clinicPhone.value = settings.general.clinicPhone;
-        if (clinicEmail && settings.general.clinicEmail) clinicEmail.value = settings.general.clinicEmail;
-        if (businessHours && settings.general.businessHours) businessHours.value = settings.general.businessHours;
-    }
-    
-    // Load social settings
-    if (settings.social) {
-        const instagramAccounts = document.getElementById('instagramAccounts');
-        const facebookAccounts = document.getElementById('facebookAccounts');
-        const youtubeAccounts = document.getElementById('youtubeAccounts');
-        const tiktokAccounts = document.getElementById('tiktokAccounts');
-        
-        if (instagramAccounts && settings.social.instagram) instagramAccounts.value = settings.social.instagram.join(', ');
-        if (facebookAccounts && settings.social.facebook) facebookAccounts.value = settings.social.facebook.join(', ');
-        if (youtubeAccounts && settings.social.youtube) youtubeAccounts.value = settings.social.youtube.join(', ');
-        if (tiktokAccounts && settings.social.tiktok) tiktokAccounts.value = settings.social.tiktok.join(', ');
+        if (clinicName && settings.general.clinic_name) clinicName.value = settings.general.clinic_name;
+        if (clinicAddress && settings.general.clinic_address) clinicAddress.value = settings.general.clinic_address;
+        if (clinicPhone && settings.general.clinic_phone) clinicPhone.value = settings.general.clinic_phone;
+        if (clinicEmail && settings.general.clinic_email) clinicEmail.value = settings.general.clinic_email;
+        if (businessHours && settings.general.business_hours) businessHours.value = settings.general.business_hours;
     }
 }
 
@@ -925,6 +770,7 @@ function getStatusText(status) {
     const statusMap = {
         'pending': 'Menunggu',
         'confirmed': 'Dikonfirmasi',
+        'completed': 'Selesai',
         'cancelled': 'Dibatalkan'
     };
     return statusMap[status] || status || 'Menunggu';
@@ -937,10 +783,8 @@ function showNotification(message, type = 'info') {
     if (notification && notificationText) {
         notificationText.textContent = message;
         
-        // Remove existing alert classes
         notification.classList.remove('alert-primary', 'alert-success', 'alert-warning', 'alert-danger');
         
-        // Set alert class based on type
         if (type === 'error') {
             notification.classList.add('alert-danger');
         } else if (type === 'success') {
@@ -953,7 +797,6 @@ function showNotification(message, type = 'info') {
         
         notification.style.display = 'block';
         
-        // Auto hide after 5 seconds
         setTimeout(() => {
             notification.style.display = 'none';
         }, 5000);
@@ -961,7 +804,6 @@ function showNotification(message, type = 'info') {
 }
 
 function showAllBookings() {
-    // Switch to bookings page
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     const bookingsLink = document.querySelector('.nav-link[data-page="bookings"]');
     if (bookingsLink) {
@@ -976,17 +818,16 @@ function showAllBookings() {
     }
 }
 
-function exportBookings() {
+async function exportBookings() {
     if (bookings.length === 0) {
         showNotification('Tidak ada data booking untuk diekspor', 'warning');
         return;
     }
     
-    // Simple CSV export
     let csv = 'ID Booking,Nama Pasien,Telepon,Layanan,Tanggal,Jam,Status\n';
     
     bookings.forEach(booking => {
-        csv += `"${booking.bookingId || ''}","${booking.patientInfo?.name || ''}","${booking.patientInfo?.phone || ''}","${booking.serviceInfo?.serviceName || ''}","${booking.appointmentInfo?.date || ''}","${booking.appointmentInfo?.time || ''}","${getStatusText(booking.status)}"\n`;
+        csv += `"${booking.id || ''}","${booking.patient_name || ''}","${booking.patient_phone || ''}","${getServiceNames(booking.booking_services)}","${booking.appointment_date || ''}","${booking.appointment_time || ''}","${getStatusText(booking.status)}"\n`;
     });
     
     try {
@@ -1000,115 +841,112 @@ function exportBookings() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        showNotification('Data booking berhasil diekspor', 'success');
+        showNotification('✅ Data booking berhasil diekspor', 'success');
     } catch (error) {
         console.error('Error exporting bookings:', error);
-        showNotification('Error saat mengekspor data', 'error');
+        showNotification('❌ Error saat mengekspor data', 'error');
     }
 }
 
-function printBookingDetails(bookingId) {
-    const booking = bookings.find(b => b.bookingId === bookingId);
-    if (!booking) {
-        showNotification('Booking tidak ditemukan', 'error');
-        return;
-    }
-    
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        showNotification('Tidak dapat membuka jendela print. Pastikan pop-up diizinkan.', 'error');
-        return;
-    }
-    
-    const servicesHTML = booking.serviceInfo?.selectedOptions ? 
-        booking.serviceInfo.selectedOptions.map(option => `
+async function printBookingDetails(bookingId) {
+    try {
+        const response = await apiCall(API_CONFIG.ENDPOINTS.BOOKING_BY_ID(bookingId));
+        if (!response.success || !response.data) {
+            showNotification('Booking tidak ditemukan', 'error');
+            return;
+        }
+        
+        const booking = response.data;
+        
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showNotification('Tidak dapat membuka jendela print. Pastikan pop-up diizinkan.', 'error');
+            return;
+        }
+        
+        const servicesHTML = booking.booking_services ? booking.booking_services.map(service => `
             <div style="background: #f9f9f9; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #3498db;">
-                <div style="font-weight: bold; font-size: 14px;">${option.name || 'N/A'}</div>
-                <div style="color: #666; font-size: 13px;">${option.price || 'N/A'}</div>
+                <div style="font-weight: bold; font-size: 14px;">${service.service_name || 'N/A'}</div>
+                <div style="color: #666; font-size: 13px;">${service.service_price || 'N/A'}</div>
             </div>
         `).join('') : '';
-    
-    const printContent = `
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <title>Booking Details - ${booking.bookingId}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }
-                    .header { text-align: center; border-bottom: 4px solid #3498db; padding-bottom: 20px; margin-bottom: 30px; }
-                    .details { margin: 30px 0; }
-                    .detail-item { margin: 15px 0; padding: 12px 0; border-bottom: 2px solid #eee; display: flex; justify-content: space-between; font-size: 14px; }
-                    .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; padding-top: 20px; border-top: 2px solid #ddd; }
-                    .status { background: #fff3e0; color: #f39c12; padding: 6px 15px; border-radius: 25px; font-weight: bold; font-size: 12px; border: 2px solid #f39c12; display: inline-block; }
-                    @media print { 
-                        body { margin: 20px; }
-                        .header { border-bottom-color: #000; }
-                        .footer { page-break-inside: avoid; }
-                    }
-                    @page { margin: 1cm; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1 style="margin: 0; color: #3498db; font-size: 28px;">Alra Care</h1>
-                    <h2 style="margin: 10px 0; color: #333; font-size: 22px;">Detail Booking</h2>
-                    <p style="margin: 0; color: #666; font-size: 16px;">Kesehatan & Kecantikan Profesional</p>
-                </div>
-                <div class="details">
-                    <div class="detail-item"><strong>Nomor Booking:</strong> <span>${booking.bookingId || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Nama Pasien:</strong> <span>${booking.patientInfo?.name || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Telepon:</strong> <span>${booking.patientInfo?.phone || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Alamat:</strong> <span>${booking.patientInfo?.address || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Tanggal:</strong> <span>${booking.appointmentInfo?.date || 'N/A'}</span></div>
-                    <div class="detail-item"><strong>Jam:</strong> <span>${booking.appointmentInfo?.time || 'N/A'}</span></div>
-                    <div class="detail-item">
-                        <strong>Layanan:</strong> 
-                        <span>${booking.serviceInfo?.serviceName || 'N/A'}</span>
+        
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Booking Details - ${booking.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }
+                        .header { text-align: center; border-bottom: 4px solid #3498db; padding-bottom: 20px; margin-bottom: 30px; }
+                        .details { margin: 30px 0; }
+                        .detail-item { margin: 15px 0; padding: 12px 0; border-bottom: 2px solid #eee; display: flex; justify-content: space-between; font-size: 14px; }
+                        .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; padding-top: 20px; border-top: 2px solid #ddd; }
+                        .status { background: #fff3e0; color: #f39c12; padding: 6px 15px; border-radius: 25px; font-weight: bold; font-size: 12px; border: 2px solid #f39c12; display: inline-block; }
+                        @media print { 
+                            body { margin: 20px; }
+                            .header { border-bottom-color: #000; }
+                            .footer { page-break-inside: avoid; }
+                        }
+                        @page { margin: 1cm; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1 style="margin: 0; color: #3498db; font-size: 28px;">Alra Care</h1>
+                        <h2 style="margin: 10px 0; color: #333; font-size: 22px;">Detail Booking</h2>
+                        <p style="margin: 0; color: #666; font-size: 16px;">Kesehatan & Kecantikan Profesional</p>
                     </div>
-                    ${servicesHTML}
-                    <div class="detail-item"><strong>Catatan:</strong> <span>${booking.patientInfo?.notes || 'Tidak ada catatan'}</span></div>
-                    <div class="detail-item"><strong>Status:</strong> <span class="status">${getStatusText(booking.status)}</span></div>
-                </div>
-                <div class="footer">
-                    <p style="font-weight: bold; font-size: 14px;">Harap datang 15 menit sebelum jadwal perawatan</p>
-                    <p>Bawa bukti booking ini saat datang ke klinik</p>
-                    <p>Terima kasih atas kepercayaan Anda kepada Alra Care</p>
-                    <p>Jl. Akcaya, Pontianak • 0813-8122-3811</p>
-                    <p>www.alracare.com • rahmadramadhanaswin@gmail.com</p>
-                </div>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 1000);
-                    };
-                </script>
-            </body>
-        </html>
-    `;
-    
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+                    <div class="details">
+                        <div class="detail-item"><strong>Nomor Booking:</strong> <span>${booking.id || 'N/A'}</span></div>
+                        <div class="detail-item"><strong>Nama Pasien:</strong> <span>${booking.patient_name || 'N/A'}</span></div>
+                        <div class="detail-item"><strong>Telepon:</strong> <span>${booking.patient_phone || 'N/A'}</span></div>
+                        <div class="detail-item"><strong>Alamat:</strong> <span>${booking.patient_address || 'N/A'}</span></div>
+                        <div class="detail-item"><strong>Tanggal:</strong> <span>${booking.appointment_date || 'N/A'}</span></div>
+                        <div class="detail-item"><strong>Jam:</strong> <span>${booking.appointment_time || 'N/A'}</span></div>
+                        ${servicesHTML}
+                        <div class="detail-item"><strong>Catatan:</strong> <span>${booking.patient_notes || 'Tidak ada catatan'}</span></div>
+                        <div class="detail-item"><strong>Status:</strong> <span class="status">${getStatusText(booking.status)}</span></div>
+                    </div>
+                    <div class="footer">
+                        <p style="font-weight: bold; font-size: 14px;">Harap datang 15 menit sebelum jadwal perawatan</p>
+                        <p>Bawa bukti booking ini saat datang ke klinik</p>
+                        <p>Terima kasih atas kepercayaan Anda kepada Alra Care</p>
+                        <p>Jl. Akcaya, Pontianak • 0813-8122-3811</p>
+                        <p>www.alracare.com • rahmadramadhanaswin@gmail.com</p>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() {
+                                window.close();
+                            }, 1000);
+                        };
+                    </script>
+                </body>
+            </html>
+        `;
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    } catch (error) {
+        console.error('Error printing booking:', error);
+        showNotification('❌ Gagal mencetak booking', 'error');
+    }
 }
 
-// Placeholder functions for future implementation
+function showAddGalleryModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addGalleryModal'));
+    modal.show();
+}
+
+// Placeholder functions
 function editService(serviceId) {
     showNotification('Fitur edit layanan akan segera tersedia', 'info');
 }
 
 function deleteService(serviceId) {
-    if (!confirm('Apakah Anda yakin ingin menghapus kategori layanan ini? Semua layanan dalam kategori ini juga akan dihapus.')) {
-        return;
-    }
-    
-    delete services[serviceId];
-    saveData();
-    displayServiceCategories();
-    displayServiceOptions();
-    displayDashboardData();
-    
-    showNotification('Kategori layanan berhasil dihapus', 'success');
+    showNotification('Fitur hapus kategori layanan akan segera tersedia', 'info');
 }
 
 function editServiceOption(categoryId, optionId) {
@@ -1116,37 +954,35 @@ function editServiceOption(categoryId, optionId) {
 }
 
 function deleteServiceOption(categoryId, optionId) {
-    if (!confirm('Apakah Anda yakin ingin menghapus layanan ini?')) {
-        return;
-    }
-    
-    const service = services[categoryId];
-    if (service && service.options) {
-        const optionIndex = service.options.findIndex(opt => opt.id === optionId);
-        if (optionIndex !== -1) {
-            service.options.splice(optionIndex, 1);
-            saveData();
-            displayServiceOptions();
-            displayDashboardData();
-            
-            showNotification('Layanan berhasil dihapus', 'success');
-        }
-    }
+    showNotification('Fitur hapus layanan akan segera tersedia', 'info');
+}
+
+function showAddBookingModal() {
+    showNotification('Fitur tambah booking manual akan segera tersedia', 'info');
+}
+
+function showAddServiceModal() {
+    showNotification('Fitur tambah kategori layanan akan segera tersedia', 'info');
+}
+
+function showAddServiceOptionModal() {
+    showNotification('Fitur tambah layanan akan segera tersedia', 'info');
 }
 
 // Export functions for global access
 window.viewBooking = viewBooking;
 window.updateBookingStatus = updateBookingStatus;
 window.deleteBooking = deleteBooking;
-window.showAddBookingModal = showAddBookingModal;
-window.showAddServiceModal = showAddServiceModal;
-window.showAddServiceOptionModal = showAddServiceOptionModal;
-window.showAddGalleryModal = showAddGalleryModal;
 window.deleteGalleryImage = deleteGalleryImage;
 window.exportBookings = exportBookings;
 window.showAllBookings = showAllBookings;
 window.printBookingDetails = printBookingDetails;
+window.showAddGalleryModal = showAddGalleryModal;
+window.showAddBookingModal = showAddBookingModal;
+window.showAddServiceModal = showAddServiceModal;
+window.showAddServiceOptionModal = showAddServiceOptionModal;
 window.editService = editService;
 window.deleteService = deleteService;
 window.editServiceOption = editServiceOption;
 window.deleteServiceOption = deleteServiceOption;
+window.logout = logout;
