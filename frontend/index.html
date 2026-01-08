@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klinik Sehat</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            text-align: center;
+            background: linear-gradient(135deg, #375bff 0%, #211bce 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        p { font-size: 1.2rem; margin-bottom: 30px; }
+        .buttons { display: flex; gap: 20px; justify-content: center; }
+        .btn {
+            padding: 15px 30px;
+            background: white;
+            color: #365bff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Klinik Sehat</h1>
+        <p>Selamat datang di sistem management klinik kami</p>
+        <div class="buttons">
+            <a href="public-site.html" class="btn">🌐 Website Public (Pasien)</a>
+            <a href="admin-site.html" class="btn">🔧 Website Admin (Staff)</a>
+        </div>
+    </div>
+</body>
+</html>

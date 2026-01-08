@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public-site.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "admin-site.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/admin",
+      "dest": "/admin-site.html"
+    },
+    {
+      "src": "/",
+      "dest": "/public-site.html"
+    },
+    {
+      "src": "/(.*\\.(css|js|webp|jpg|png|svg|ico))",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "https://qwqerdledoqfugdntdzz.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3cWVyZGxlZG9xZnVnZG50ZHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NjAyMjYsImV4cCI6MjA4MzQzNjIyNn0.yfagkthtsnxQZApcjDk-4eh5scQPGdRNUxm4QqkCh2A",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3cWVyZGxlZG9xZnVnZG50ZHp6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Nzg2MDIyNiwiZXhwIjoyMDgzNDM2MjI2fQ.DSiHpYNv-p77YbbX4DHDFAuIOKTq9ygIZmCN8WpF7Q0",
+    "JWT_SECRET": "d1IL1IMgpitS2DDXbUIpVU14iYkqG4cSm3zmw39cO/JzX1ZY2qk/UQZNaE7haFRztoxFyn2dQikJZg74LZhefQ=="
+  }
+}
+
