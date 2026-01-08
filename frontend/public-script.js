@@ -5,6 +5,7 @@ const API_BASE_URL = window.location.hostname === 'localhost'
 
 // ===== GLOBAL VARIABLES =====
 let serviceDetails = {};
+let serviceCategoryMapping = {}; // Map static IDs to dynamic category IDs
 let availableTimeSlots = [];
 
 // ===== INITIALIZATION =====
@@ -32,32 +33,87 @@ async function loadServiceDetails() {
         
         if (result.success) {
             serviceDetails = result.data;
+            
+            // Create mapping from static IDs to dynamic category IDs
+            createServiceMapping(serviceDetails);
+            
             console.log('Service details loaded:', serviceDetails);
+            console.log('Service mapping:', serviceCategoryMapping);
         } else {
             console.error('Failed to load services:', result.message);
-            // Fallback to localStorage if API fails
             loadServiceDetailsFromLocalStorage();
         }
     } catch (error) {
         console.error('Error loading services:', error);
-        // Fallback to localStorage if API fails
         loadServiceDetailsFromLocalStorage();
     }
+}
+
+function createServiceMapping(services) {
+    // Map static IDs (perawatan1, perawatan2, etc.) to actual category IDs from API
+    const categories = Object.keys(services);
+    
+    categories.forEach((categoryId, index) => {
+        const service = services[categoryId];
+        const staticId = `perawatan${index + 1}`;
+        
+        // Create bidirectional mapping
+        serviceCategoryMapping[staticId] = categoryId;
+        serviceCategoryMapping[categoryId] = staticId;
+        
+        console.log(`Mapping: ${staticId} <-> ${categoryId} (${service.title})`);
+    });
 }
 
 function loadServiceDetailsFromLocalStorage() {
     const stored = localStorage.getItem('serviceDetails');
     if (stored) {
         serviceDetails = JSON.parse(stored);
+        createServiceMapping(serviceDetails);
         console.log('Service details loaded from localStorage');
     }
 }
 
 // ===== SERVICE DETAIL MODAL =====
 function showServiceDetail(serviceId) {
-    const service = serviceDetails[serviceId];
+    console.log('showServiceDetail called with ID:', serviceId);
+    
+    // Try to get service with the provided ID first
+    let service = serviceDetails[serviceId];
+    let actualServiceId = serviceId;
+    
+    // If not found, try to map from static ID to dynamic ID
+    if (!service && serviceCategoryMapping[serviceId]) {
+        actualServiceId = serviceCategoryMapping[serviceId];
+        service = serviceDetails[actualServiceId];
+        console.log(`Mapped ${serviceId} to ${actualServiceId}`);
+    }
+    
+    // If still not found, try to find by matching title
+    if (!service) {
+        const titleMap = {
+            'perawatan1': 'Perawatan Luka Modern',
+            'perawatan2': 'Perawatan Kecantikan',
+            'perawatan3': 'Sunat Modern',
+            'perawatan4': 'Hipnoterapi',
+            'perawatan5': 'Skincare'
+        };
+        
+        const targetTitle = titleMap[serviceId];
+        if (targetTitle) {
+            for (const [key, val] of Object.entries(serviceDetails)) {
+                if (val.title === targetTitle) {
+                    service = val;
+                    actualServiceId = key;
+                    console.log(`Found service by title: ${targetTitle}`);
+                    break;
+                }
+            }
+        }
+    }
     
     if (!service) {
+        console.error(`Service not found for ID: ${serviceId}`);
         showNotification('Layanan tidak ditemukan', 'error');
         return;
     }
@@ -110,7 +166,7 @@ function showServiceDetail(serviceId) {
             <button class="btn-secondary" onclick="modalManager.closeAll()">
                 <i class="fas fa-times"></i> Tutup
             </button>
-            <button class="btn-primary" onclick="proceedToBooking('${serviceId}')">
+            <button class="btn-primary" onclick="proceedToBooking('${actualServiceId}')">
                 <i class="fas fa-calendar-check"></i> Lanjut Booking
             </button>
         </div>
