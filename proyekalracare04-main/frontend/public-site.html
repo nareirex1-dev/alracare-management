@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alra Care - Kesehatan & Kecantikan Profesional</title>
+    <meta name="description" content="Klinik Alra Care - Pusat Perawatan Luka Modern, Kecantikan, Sunat Modern, dan Hipnoterapi di Pontianak">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="public-style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="./images/image_logo.webp" alt="Alra Care Logo" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjM2FhZmYzIi8+Cjx0ZXh0IHg9IjI1IiB5PSIyOCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QUw8L3RleHQ+Cjwvc3ZnPgo='">
+                <div class="logo-text">
+                    <span>Alra Care</span>
+                    <span>Kesehatan & Kecantikan</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Beranda</a></li>
+                <li><a href="#services">Layanan</a></li>
+                <li><a href="#gallery">Galeri</a></li>
+                <li><a href="#footer">Kontak</a></li>
+                <li><a href="admin-site.html" class="admin-link">Admin</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <img src="./images/image_logo.webp" alt="Alra Care Logo" class="hero-logo" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjM2FhZmYzIi8+Cjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QUw8L3RleHQ+Cjwvc3ZnPgo='">
+                <h1>Alra Care</h1>
+                <p class="hero-tagline">Kesehatan & Kecantikan Profesional</p>
+                <div class="hero-features">
+                    <p><i class="fas fa-check-circle"></i> Pusat Perawatan Luka Modern</p>
+                    <p><i class="fas fa-check-circle"></i> Pusat Perawatan Kecantikan</p>
+                    <p><i class="fas fa-check-circle"></i> Pusat Sunat Modern</p>
+                    <p><i class="fas fa-check-circle"></i> Pusat Hipnoterapi</p>
+                </div>
+                <div class="hero-buttons">
+                    <button class="cta-button primary" onclick="scrollToServices()">
+                        <i class="fas fa-eye"></i> Lihat Layanan
+                    </button>
+                    <button class="cta-button secondary" onclick="showQuickBooking()">
+                        <i class="fas fa-calendar-check"></i> Booking Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2>Layanan Kami</h2>
+            <p class="section-subtitle">Berbagai jenis perawatan profesional untuk kesehatan dan kecantikan Anda</p>
+            
+            <div class="services-grid">
+                <!-- Perawatan Luka Modern -->
+                <div class="service-card" onclick="showServiceDetail('perawatan1')">
+                    <div class="service-image-container ratio-1-1">
+                        <img src="./images/L_PERAWATANLIKADIKLINIK.webp" alt="Perawatan Luka Modern" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOGY4Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBlcmF3YXRhbiBMdWthIE1vZGVybjwvdGV4dD4KPC9zdmc+Cg=='">
+                    </div>
+                    <div class="service-content">
+                        <h3>Perawatan Luka Modern</h3>
+                        <div class="service-price">
+                            <span class="price">Rp 150.000 - 200.000</span>
+                        </div>
+                        <button class="service-btn">
+                            <i class="fas fa-info-circle"></i> Detail Layanan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Perawatan Kecantikan -->
+                <div class="service-card" onclick="showServiceDetail('perawatan2')">
+                    <div class="service-image-container ratio-1-1">
+                        <img src="./images/A_COVER.webp" alt="Perawatan Kecantikan" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOGY4Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBlcmF3YXRhbiBLZWNhbnRpa2FuPC90ZXh0Pgo8L3N2Zz4K'">
+                    </div>
+                    <div class="service-content">
+                        <h3>Perawatan Kecantikan</h3>
+                        <div class="service-price">
+                            <span class="price">Rp 150.000 - 1.600.000</span>
+                        </div>
+                        <button class="service-btn">
+                            <i class="fas fa-info-circle"></i> Detail Layanan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sunat Modern -->
+                <div class="service-card" onclick="showServiceDetail('perawatan3')">
+                    <div class="service-image-container ratio-1-1">
+                        <img src="./images/S_COVER.webp" alt="Sunat Modern" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOGY4Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlN1bmF0IE1vZGVybjwvdGV4dD4KPC9zdmc+Cg=='">
+                    </div>
+                    <div class="service-content">
+                        <h3>Sunat Modern</h3>
+                        <div class="service-price">
+                            <span class="price">Rp 1.200.000 - 2.800.000</span>
+                        </div>
+                        <button class="service-btn">
+                            <i class="fas fa-info-circle"></i> Detail Layanan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hipnoterapi -->
+                <div class="service-card" onclick="showServiceDetail('perawatan4')">
+                    <div class="service-image-container ratio-1-1">
+                        <img src="./images/H_COVER.webp" alt="Hipnoterapi" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOGY4Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUi+SGlwbm90ZXJhcGk8L3RleHQ+Cjwvc3ZnPgo='">
+                    </div>
+                    <div class="service-content">
+                        <h3>Hipnoterapi</h3>
+                        <div class="service-price">
+                            <span class="price">Rp 500.000</span>
+                        </div>
+                        <button class="service-btn">
+                            <i class="fas fa-info-circle"></i> Detail Layanan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skincare -->
+                <div class="service-card" onclick="showServiceDetail('perawatan5')">
+                    <div class="service-image-container ratio-1-1">
+                        <img src="./images/SK_COVER.webp" alt="Skincare" loading="lazy" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjhmOGY4Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNraW5jYXJlPC90ZXh0Pgo8L3N2Zz4K'">
+                    </div>
+                    <div class="service-content">
+                        <h3>Skincare</h3>
+                        <div class="service-price">
+                            <span class="price">Rp 155.000 - 450.000</span>
+                        </div>
+                        <button class="service-btn">
+                            <i class="fas fa-info-circle"></i> Detail Layanan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2>Galeri Klinik</h2>
+            <p class="section-subtitle">Lihat suasana dan fasilitas klinik kami</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="./images/tampakdepan.webp" alt="Tampak Depan" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-clinic-medical"></i>
+                    </div>
+                    <p>Tampak Depan</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/ruang_tunggu_1.webp" alt="Ruang Tunggu" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-couch"></i>
+                    </div>
+                    <p>Ruang Tunggu</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/ruang_tunggu_2.webp" alt="Ruang Tunggu" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-couch"></i>
+                    </div>
+                    <p>Ruang Tunggu</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/ruang_kecantikan.webp" alt="Ruang Kecantikan" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <p>Ruang Kecantikan</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/ruang_luka.webp" alt="Ruang Luka" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-procedures"></i>
+                    </div>
+                    <p>Ruang Luka</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/TimMedis.webp" alt="Tim Perawat" loading="lazy" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="gallery-fallback" style="display: none;">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <p>Tim Perawat</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Info Klinik -->
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="./images/image_logo.webp" alt="Alra Care Logo" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjM2FhZmYzIi8+Cjx0ZXh0IHg9IjMwIiB5PSIzMyIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QUw8L3RleHQ+Cjwvc3ZnPgo='">
+                        <div class="logo-text">
+                            <span>Alra Care</span>
+                            <span>Kesehatan & Kecantikan Profesional</span>
+                        </div>
+                    </div>
+                    <div class="clinic-features">
+                        <p><i class="fas fa-check-circle"></i> Pusat Perawatan Luka Modern</p>
+                        <p><i class="fas fa-check-circle"></i> Pusat Perawatan Kecantikan</p>
+                        <p><i class="fas fa-check-circle"></i> Pusat Sunat Modern</p>
+                        <p><i class="fas fa-check-circle"></i> Pusat Hipnoterapi</p>
+                    </div>
+                </div>
+                
+                <!-- Media Sosial -->
+                <div class="footer-section">
+                    <h4>Media Sosial</h4>
+                    <div class="social-media-section">
+                        <!-- Instagram -->
+                        <div class="social-platform instagram">
+                            <div class="platform-title">
+                                <i class="fab fa-instagram"></i>
+                                <span>Instagram</span>
+                            </div>
+                            <div class="social-accounts">
+                                <a href="https://www.instagram.com/alra_spesialis_luka?igsh=dG80aG5iaXh5eWc1" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-instagram"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra_spesialis_luka</div>
+                                    </div>
+                                </a>
+                                <a href="https://www.instagram.com/alra_aesthetic?igsh=MXVudzFtNm01NDkyeg==" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-instagram"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra Aesthetic</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Facebook -->
+                        <div class="social-platform facebook">
+                            <div class="platform-title">
+                                <i class="fab fa-facebook"></i>
+                                <span>Facebook</span>
+                            </div>
+                            <div class="social-accounts">
+                                <a href="https://www.facebook.com/share/168WGYimFr/" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-facebook"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">AlraCare</div>
+                                    </div>
+                                </a>
+                                <a href="https://www.facebook.com/share/1JHPwThUub/" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-facebook"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra Aesthetic</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- YouTube -->
+                        <div class="social-platform youtube">
+                            <div class="platform-title">
+                                <i class="fab fa-youtube"></i>
+                                <span>YouTube</span>
+                            </div>
+                            <div class="social-accounts">
+                                <a href="https://youtube.com/@alracare9299?si=KnjAq1fZwcTiOwUN" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-youtube"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra care</div>
+                                    </div>
+                                </a>
+                                <a href="https://youtube.com/@alraaesthetic1107?si=MhI8RYMTf6GOVnHp" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-youtube"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra Aesthetic</div>
+                                    </div>
+                                </a>
+                                <a href="https://youtube.com/@alrakhitan3488?si=9GyMUIaEpS-XAIaX" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-youtube"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra Khitan</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- TikTok -->
+                        <div class="social-platform tiktok">
+                            <div class="platform-title">
+                                <i class="fab fa-tiktok"></i>
+                                <span>TikTok</span>
+                            </div>
+                            <div class="social-accounts">
+                                <a href="https://www.tiktok.com/@alra_care?_t=ZS-90csiaX0Agj&_r=1" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-tiktok"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra_care</div>
+                                    </div>
+                                </a>
+                                <a href="https://www.tiktok.com/@alra_aesthetic?_t=ZS-90csmKAVs01&_r=1" class="social-account" target="_blank" rel="noopener noreferrer">
+                                    <div class="account-icon">
+                                        <i class="fab fa-tiktok"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <div class="username">Alra Aesthetic</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kontak -->
+                <div class="footer-section">
+                    <h4>Kontak Kami</h4>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-text">
+                                <a href="tel:6281381223811" class="contact-link">62813-8122-3811</a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-text">
+                                <a href="/cdn-cgi/l/email-protection#1c6e7d74717d786e7d717d78747d727d6f6b75725c7b717d7570327f7371" class="contact-link">
+                                    <span class="__cf_email__" data-cfemail="ef9d8e87828e8b9d8e828e8b878e818e9c988681af88828e8683c18c8082">[email&#160;protected]</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-text">
+                                <a href="https://maps.app.goo.gl/R2WbpptYESPUdnYA8" target="_blank" rel="noopener noreferrer" class="contact-link">
+                                    Jl. Akcaya, Akcaya, Kec. Pontianak Sel., Kota Pontianak, Kalimantan Barat
+                                </a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-text">
+                                Senin - Minggu: 08:00 - 17:00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Alra Care. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+    <!-- Service Details Modal -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="modalManager.closeAll()">&times;</span>
+            <div id="serviceModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Quick Booking Modal -->
+    <div id="quickBookingModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="modalManager.closeAll()">&times;</span>
+            <div id="quickBookingContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+        <button class="notification-close" onclick="this.parentElement.classList.remove('show')">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="public-script.js"></script>
+</body>
+</html>

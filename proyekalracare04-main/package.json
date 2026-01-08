@@ -1,0 +1,33 @@
+{
+  "name": "alracare-clinic",
+  "version": "1.0.0",
+  "description": "Alra Care Clinic Management System with Supabase Backend",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "node api/index.js",
+    "start": "node api/index.js"
+  },
+  "keywords": [
+    "clinic",
+    "booking",
+    "healthcare",
+    "supabase"
+  ],
+  "author": "Alra Care",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

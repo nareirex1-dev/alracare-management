@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Data - Klinik Sehat</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Data Klinik Sehat</h1>
+    
+    <div class="debug-section">
+        <h3>Data Bookings</h3>
+        <button onclick="loadBookings()">Load Bookings</button>
+        <button onclick="clearBookings()">Clear All Bookings</button>
+        <button onclick="addTestBooking()">Add Test Booking</button>
+        <div id="bookingsData"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>LocalStorage Info</h3>
+        <button onclick="checkLocalStorage()">Check LocalStorage</button>
+        <div id="storageInfo"></div>
+    </div>
+
+    <script src="data-manager.js"></script>
+    <script>
+        function loadBookings() {
+            const dataManager = new DataManager();
+            const bookings = dataManager.getBookings();
+            
+            document.getElementById('bookingsData').innerHTML = `
+                <p><strong>Total Bookings:</strong> ${bookings.length}</p>
+                <pre>${JSON.stringify(bookings, null, 2)}</pre>
+            `;
+        }
+        
+        function clearBookings() {
+            if (confirm('Hapus semua data bookings?')) {
+                const dataManager = new DataManager();
+                dataManager.saveBookings([]);
+                loadBookings();
+                alert('Data cleared!');
+            }
+        }
+        
+        function addTestBooking() {
+            const testBooking = {
+                bookingId: 'TEST' + Date.now(),
+                patientInfo: {
+                    name: 'Pasien Test',
+                    phone: '081234567890',
+                    address: 'Alamat test',
+                    notes: 'Ini data test'
+                },
+                appointmentInfo: {
+                    date: '2024-01-15',
+                    time: '10:00',
+                    datetime: new Date().toISOString()
+                },
+                serviceInfo: {
+                    serviceId: 'perawatan1',
+                    serviceName: 'Perawatan Luka Modern',
+                    selectedOptions: [
+                        { id: 'luka-diabetes', name: 'Luka Diabetes', price: 'Rp 300.000' }
+                    ]
+                },
+                status: 'pending',
+                bookingDate: new Date().toISOString(),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            const dataManager = new DataManager();
+            const bookings = dataManager.getBookings();
+            bookings.push(testBooking);
+            dataManager.saveBookings(bookings);
+            
+            loadBookings();
+            alert('Test booking added!');
+        }
+        
+        function checkLocalStorage() {
+            let info = '<h4>LocalStorage Keys:</h4><ul>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                info += `<li><strong>${key}:</strong> ${value.substring(0, 100)}...</li>`;
+            }
+            
+            info += '</ul>';
+            document.getElementById('storageInfo').innerHTML = info;
+        }
+        
+        // Auto load on start
+        loadBookings();
+        checkLocalStorage();
+    </script>
+</body>
+</html>
