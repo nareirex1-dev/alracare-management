@@ -20,16 +20,36 @@
       "dest": "/frontend/admin-site.html"
     },
     {
+      "src": "/admin-site.html",
+      "dest": "/frontend/admin-site.html"
+    },
+    {
+      "src": "/public-site.html",
+      "dest": "/frontend/public-site.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/frontend/index.html"
+    },
+    {
       "src": "/images/(.*)",
       "dest": "/frontend/images/$1"
     },
     {
-      "src": "/(.*\\.(css|js))",
+      "src": "/(.*\\.css)",
+      "dest": "/frontend/$1"
+    },
+    {
+      "src": "/(.*\\.js)",
       "dest": "/frontend/$1"
     },
     {
       "src": "/",
-      "dest": "/frontend/public-site.html"
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
     }
   ]
 }
